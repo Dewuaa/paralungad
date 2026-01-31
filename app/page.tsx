@@ -241,8 +241,8 @@ function MapPageContent() {
       {/* Visual Effects */}
       <StarField />
       
-      {/* Sound Toggle (Top Left) */}
-      <div className={`absolute top-8 left-8 z-30 transition-opacity duration-1000 delay-[3000ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Sound Toggle (Top Left - Adjusted for Mobile) */}
+      <div className={`absolute top-4 md:top-8 left-4 md:left-8 z-30 transition-opacity duration-1000 delay-[3000ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
           <button
             onClick={() => {
                 toggleMute();
@@ -256,8 +256,8 @@ function MapPageContent() {
           </button>
       </div>
 
-      {/* Hamburger Menu (Top Right) */}
-      <div className={`absolute top-8 right-8 z-50 transition-opacity duration-1000 delay-[3200ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Hamburger Menu (Top Right - Adjusted for Mobile) */}
+      <div className={`absolute top-4 md:top-8 right-4 md:right-8 z-50 transition-opacity duration-1000 delay-[3200ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
          <HamburgerMenu 
             user={user}
             onLogout={handleLogout}
@@ -288,10 +288,10 @@ function MapPageContent() {
 
       {/* Title Overlay - Fades in after intro */}
       <div className={`absolute top-8 md:top-10 left-0 right-0 z-20 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-[2000ms] delay-[2500ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
-        <h1 className="text-3xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 drop-shadow-lg font-serif tracking-tight px-4 text-center">
+        <h1 className="text-4xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 drop-shadow-2xl font-serif tracking-tighter px-4 text-center">
           Paraluman
         </h1>
-        <p className="text-white/60 text-[10px] md:text-base font-light mt-2 tracking-wide md:tracking-widest uppercase text-center px-4">
+        <p className="text-white/60 text-[10px] md:text-sm font-light mt-2 tracking-widest uppercase text-center px-4 hidden md:block">
           Your compass to cherished memories.
         </p>
       </div>

@@ -48,7 +48,7 @@ export function HamburgerMenu({ user, onLogout, onSelectLocation }: HamburgerMen
 
       {/* Menu Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-14 w-80 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-4 origin-top-right flex flex-col gap-4">
+        <div className="absolute right-0 top-14 w-[calc(100vw-32px)] max-w-xs bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-4 origin-top-right flex flex-col gap-4">
             
             {/* 1. Embedded Search */}
             <div className="w-full">

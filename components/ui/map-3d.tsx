@@ -57,7 +57,15 @@ export function Map3DModel({
       scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits() * scale,
     };
 
-    const customLayer: maplibregl.CustomLayerInterface = {
+    // Extend CustomLayerInterface to include the properties we add
+    interface ThreeJSCustomLayer extends maplibregl.CustomLayerInterface {
+        camera?: THREE.Camera;
+        scene?: THREE.Scene;
+        map?: maplibregl.Map;
+        renderer?: THREE.WebGLRenderer;
+    }
+
+    const customLayer: ThreeJSCustomLayer = {
       id: layerId,
       type: "custom",
       renderingMode: "3d",
@@ -82,7 +90,9 @@ export function Map3DModel({
         loader.load(
           modelUrl,
           (gltf) => {
-            this.scene.add(gltf.scene);
+            if (this.scene) {
+                this.scene.add(gltf.scene);
+            }
           },
           undefined, // onProgress
           (error) => {
@@ -102,6 +112,8 @@ export function Map3DModel({
         this.renderer.autoClear = false;
       },
       render: function (gl, matrix) {
+        if (!this.map || !this.scene || !this.camera || !this.renderer) return;
+
         const rotationX = new THREE.Matrix4().makeRotationAxis(
           new THREE.Vector3(1, 0, 0),
           modelTransform.rotateX
@@ -115,7 +127,7 @@ export function Map3DModel({
           modelTransform.rotateZ
         );
 
-        const m = new THREE.Matrix4().fromArray(matrix);
+        const m = new THREE.Matrix4().fromArray(matrix as unknown as number[]); // Fix matrix type
         const l = new THREE.Matrix4()
           .makeTranslation(
             modelTransform.translateX,
