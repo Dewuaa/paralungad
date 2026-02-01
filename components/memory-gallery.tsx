@@ -18,6 +18,8 @@ interface Memory {
   memory_date: string;
   spotify_url?: string;
   unlock_date?: string;
+  is_public: boolean;
+  user_id: string;
   latitude: number;
   longitude: number;
 }
@@ -27,11 +29,12 @@ interface MemoryGalleryProps {
   onClose: () => void;
   memories: Memory[];
   onSelectMemory: (memory: Memory) => void;
+  currentUserId?: string;
 }
 
-export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory }: MemoryGalleryProps) {
+export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory, currentUserId }: MemoryGalleryProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked'>('all');
+  const [filter, setFilter] = useState<'all' | 'locked' | 'unlocked' | 'mine' | 'public'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   const filteredMemories = memories.filter(memory => {
@@ -40,12 +43,11 @@ export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory }: Mem
 
     const isLocked = memory.unlock_date && new Date(memory.unlock_date) > new Date();
 
-    if (filter === 'locked') {
-      return matchesSearch && isLocked;
-    }
-    if (filter === 'unlocked') {
-      return matchesSearch && !isLocked;
-    }
+    if (filter === 'locked') return matchesSearch && isLocked;
+    if (filter === 'unlocked') return matchesSearch && !isLocked;
+    if (filter === 'mine') return matchesSearch && memory.user_id === currentUserId;
+    if (filter === 'public') return matchesSearch && memory.is_public && memory.user_id !== currentUserId;
+
     return matchesSearch; // filter === 'all'
   });
 
@@ -106,6 +108,8 @@ export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory }: Mem
                             className="bg-zinc-900/50 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm focus:outline-none focus:border-zinc-600 cursor-pointer appearance-none text-zinc-300 hover:text-white transition-colors"
                         >
                             <option value="all">All Memories</option>
+                            <option value="mine">My Memories</option>
+                            <option value="public">The Galaxy</option>
                             <option value="unlocked">Unlocked</option>
                             <option value="locked">Locked</option>
                         </select>

@@ -33,7 +33,8 @@ interface Memory {
   latitude: number;
   longitude: number;
   spotify_url?: string;
-  unlock_date?: string;
+  is_public: boolean;
+  user_id: string; // Needed to distinguish "Mine" vs "Others"
 }
 
 // Inner component to use the hook
@@ -65,18 +66,29 @@ function MapPageContent() {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const fetchMemories = useCallback(async () => {
-    if (!user) {
-        setMemories([]);
-        return;
+    let query = supabase.from('memories').select('*');
+
+    const isGuest = !user;
+    if (!isGuest) {
+        // Logged in: My memories OR Public memories
+        query = query.or(`user_id.eq.${user.id},is_public.eq.true`);
+    } else {
+        // Guest: Only Public memories
+        query = query.eq('is_public', true);
     }
-    const { data, error } = await supabase
-      .from('memories')
-      .select('*')
-      .eq('user_id', user.id); // Only fetch user's memories for now
+
+    console.log(`[Fetch] Fetching memories... Guest Mode: ${isGuest}`);
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching memories:', error);
+      toast.error(`Database Error: ${error.message}`);
     } else {
+        console.log(`[Fetch] Success! Found ${data?.length || 0} memories.`);
+        if (isGuest && (!data || data.length === 0)) {
+            console.warn("[Fetch] Guest found 0 memories. Check RLS Policies if public memories exist.");
+        }
         const memoryData = data || [];
         setMemories(memoryData);
     }
@@ -329,7 +341,8 @@ function MapPageContent() {
 
                     <MemoryLayer 
                         memories={memories} 
-                        onMemoryClick={handleMemoryClick} 
+                        onMemoryClick={handleMemoryClick}
+                        currentUserId={user?.id} 
                     />
                     
                     {/* 3D Model Demo */}
@@ -344,7 +357,7 @@ function MapPageContent() {
 
                     <JourneyController 
                         isActive={isJourneyMode}
-                        memories={memories}
+                        memories={user ? memories.filter(m => m.user_id === user.id) : memories}
                         onClose={() => setIsJourneyMode(false)}
                         onMemoryFocus={(memory) => {
                             // Optionally open the view modal or just highlight
@@ -391,7 +404,7 @@ function MapPageContent() {
             ) : (
               <>
                 <button
-                    onClick={startPinning}
+                    onClick={startPinning} // Start pinning mode
                     onMouseEnter={playHover}
                     className="flex items-center justify-center gap-2 px-4 md:px-5 py-2.5 rounded-full bg-white text-black font-semibold hover:bg-zinc-200 transition-all active:scale-95 flex-1 md:flex-initial"
                 >
@@ -460,17 +473,19 @@ function MapPageContent() {
       />
       
       <MemoryViewModal
-        isOpen={!!selectedMemory}
+        isOpen={!!selectedMemory} // Controls modal visibility
         onClose={() => setSelectedMemory(null)}
         memory={selectedMemory}
         onEdit={handleEditMemory}
         onDelete={handleDeleteMemory}
+        currentUserId={user?.id}
       />
       
       <MemoryGallery
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         memories={memories}
+        currentUserId={user?.id}
         onSelectMemory={(memory) => {
             playClick();
             // Fly to location

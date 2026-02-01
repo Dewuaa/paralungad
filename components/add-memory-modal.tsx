@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea"; // Assuming installed
-import { Loader2, Upload, MapPin, Music } from "lucide-react";
+import { Loader2, Upload, MapPin, Music, Rocket } from "lucide-react";
 import { compressImage } from "@/lib/image-compression";
+import { Switch } from "@/components/ui/switch";
 
 interface AddMemoryModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export function AddMemoryModal({
   const [unlockDate, setUnlockDate] = useState(
     initialData?.unlock_date ? new Date(initialData.unlock_date).toISOString().slice(0, 16) : ""
   );
+  const [isPublic, setIsPublic] = useState(initialData?.is_public || false);
   
   // Use initial image URL for preview if editing
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -58,6 +60,7 @@ export function AddMemoryModal({
          setDate(initialData.memory_date ? new Date(initialData.memory_date).toISOString().split('T')[0] : "");
          setUnlockDate(initialData.unlock_date ? new Date(initialData.unlock_date).toISOString().slice(0, 16) : "");
          setImagePreview(initialData.media_url);
+         setIsPublic(initialData.is_public || false);
      } else {
         // Reset if no initial data (switching to add mode)
         setTitle("");
@@ -67,6 +70,7 @@ export function AddMemoryModal({
         setUnlockDate("");
         setImagePreview(null);
         setImageFile(null);
+        setIsPublic(false);
      }
   }, [initialData]);
 
@@ -134,6 +138,7 @@ export function AddMemoryModal({
         media_type: 'image',
         spotify_url: spotifyUrl || null,
         unlock_date: unlockDate ? new Date(unlockDate).toISOString() : null,
+        is_public: isPublic
       };
 
       let error;
@@ -167,6 +172,7 @@ export function AddMemoryModal({
           setUnlockDate("");
           setImageFile(null);
           setImagePreview(null);
+          setIsPublic(false);
       }
 
     } catch (error: any) {
@@ -273,6 +279,23 @@ export function AddMemoryModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="bg-zinc-900 border-zinc-700 text-white resize-none h-24"
+            />
+          </div>
+
+          <div className="flex items-center justify-between bg-zinc-900/50 p-3 rounded-lg border border-zinc-800">
+            <div className="flex items-center gap-2">
+                <div className="p-2 rounded-full bg-purple-500/20 text-purple-400">
+                    <Rocket className="w-5 h-5" />
+                </div>
+                <div>
+                    <Label htmlFor="public-mode" className="font-semibold text-zinc-200">Launch to Universe</Label>
+                    <p className="text-xs text-zinc-500">Allow others to find this memory in the galaxy.</p>
+                </div>
+            </div>
+            <Switch
+                id="public-mode"
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
             />
           </div>
 

@@ -14,14 +14,17 @@ interface Memory {
   longitude: number;
   spotify_url?: string;
   unlock_date?: string;
+  is_public: boolean;
+  user_id: string;
 }
 
 interface MemoryLayerProps {
   memories: Memory[];
   onMemoryClick: (memory: Memory) => void;
+  currentUserId?: string;
 }
 
-export function MemoryLayer({ memories, onMemoryClick }: MemoryLayerProps) {
+export function MemoryLayer({ memories, onMemoryClick, currentUserId }: MemoryLayerProps) {
   const { map, isLoaded } = useMap();
   const sourceId = "memories-source";
   const layerId = "memories-layer";
@@ -196,11 +199,13 @@ export function MemoryLayer({ memories, onMemoryClick }: MemoryLayerProps) {
                     "circle-color": [
                         "case",
                         ["boolean", ["get", "locked"], false],
-                        "#fbbf24", // Gold for locked (amber-400)
-                        "#ffffff"  // White for unlocked
+                        // Locked
+                        ["case", ["boolean", ["get", "isOwner"], false], "#fbbf24", "#0e7490"], // Gold if mine, Dark Cyan if public
+                        // Unlocked
+                        ["case", ["boolean", ["get", "isOwner"], false], "#ffffff", "#22d3ee"]  // Bright Silver (White) if mine, Cyan if public
                     ],
                     "circle-stroke-width": 2,
-                    "circle-stroke-color": "#000000",
+                    "circle-stroke-color": ["case", ["boolean", ["get", "isOwner"], false], "#000000", "#164e63"], // Black stroke for mine, Dark Cyan stroke for public
                 }
             });
         }
@@ -345,7 +350,8 @@ export function MemoryLayer({ memories, onMemoryClick }: MemoryLayerProps) {
                     properties: { 
                         id: m.id, 
                         title: m.location_name,
-                        locked: isLocked 
+                        locked: isLocked,
+                        isOwner: currentUserId ? m.user_id === currentUserId : false
                     },
                 };
             }),
@@ -356,8 +362,11 @@ export function MemoryLayer({ memories, onMemoryClick }: MemoryLayerProps) {
     // Update Lines (Constellation)
     const lineSource = map.getSource("constellation-source") as maplibregl.GeoJSONSource;
     if (lineSource) {
+        // Filter: Only connect MY memories
+        const myMemories = currentUserId ? memories.filter(m => m.user_id === currentUserId) : [];
+
         // Sort memories by date
-        const sortedMemories = [...memories].sort((a, b) => 
+        const sortedMemories = [...myMemories].sort((a, b) => 
             new Date(a.memory_date).getTime() - new Date(b.memory_date).getTime()
         );
 

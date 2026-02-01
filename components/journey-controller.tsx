@@ -17,6 +17,8 @@ interface Memory {
   longitude: number;
   spotify_url?: string;
   unlock_date?: string;
+  is_public: boolean;
+  user_id: string;
 }
 
 interface JourneyControllerProps {
