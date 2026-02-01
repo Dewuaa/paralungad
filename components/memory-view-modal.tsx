@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { Calendar, MapPin, Lock } from "lucide-react";
+import { Calendar, MapPin, Lock, Pencil, Trash2, X } from "lucide-react";
 
 interface Memory {
   id: number;
@@ -52,8 +52,7 @@ export function MemoryViewModal({ isOpen, onClose, memory, onEdit, onDelete }: M
   const isLocked = memory.unlock_date && new Date(memory.unlock_date) > new Date();
   const spotifyEmbedUrl = memory.spotify_url ? getSpotifyEmbedUrl(memory.spotify_url) : null;
   
-  // Lucide icons
-  const { Pencil, Trash2 } = require('lucide-react'); // Dynamic import style to match file
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -114,6 +113,15 @@ export function MemoryViewModal({ isOpen, onClose, memory, onEdit, onDelete }: M
                         No Image
                     </div>
                 )}
+                
+                {/* Close Button Overlay */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md transition-colors text-white z-10"
+                >
+                    <X className="w-5 h-5" />
+                </button>
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 
                 <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -157,12 +165,12 @@ export function MemoryViewModal({ isOpen, onClose, memory, onEdit, onDelete }: M
 
                     {/* Spotify Player */}
                     {spotifyEmbedUrl && (
-                        <div className="relative w-full h-[152px] rounded-xl overflow-hidden bg-black/20 animate-in fade-in duration-700">
+                        <div className="relative w-full h-[80px] rounded-xl overflow-hidden bg-black/20 animate-in fade-in duration-700 mt-auto">
                             <iframe 
                                 style={{ borderRadius: '12px' }} 
                                 src={spotifyEmbedUrl} 
                                 width="100%" 
-                                height="152" 
+                                height="80" 
                                 frameBorder="0" 
                                 allowFullScreen 
                                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 

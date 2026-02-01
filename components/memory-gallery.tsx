@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { Lock, MapPin, Calendar, Music, Search, ArrowDownNarrowWide, ArrowUpNarrowWide, Filter } from "lucide-react";
+import { Lock, MapPin, Calendar, Music, Search, ArrowUpDown, Filter, X, LayoutGrid, ChevronDown, Image as ImageIcon } from "lucide-react";
 import { useState, useMemo } from "react";
 
 interface Memory {
@@ -62,16 +62,24 @@ export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory }: Mem
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[100vw] h-[100dvh] md:w-[95vw] md:max-w-4xl md:h-[85vh] bg-zinc-950 border-zinc-800 text-white flex flex-col p-0 overflow-hidden md:rounded-xl rounded-none border-0 md:border">
-        <DialogHeader className="p-4 md:p-6 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl z-10 shrink-0 space-y-4">
+      <DialogContent className="w-[95vw] h-[85dvh] max-w-4xl md:h-[85vh] bg-zinc-950 border-zinc-800 text-white flex flex-col p-0 overflow-hidden rounded-xl border">
+        <DialogHeader className="p-3 md:p-6 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl z-10 shrink-0 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
-                <DialogTitle className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <span className="text-2xl md:text-3xl">📂</span>
-                    Memory Gallery
-                    <span className="text-xs md:text-sm font-normal text-zinc-500 ml-auto md:ml-2 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
-                        {filteredMemories.length} results
+                <DialogTitle className="text-xl md:text-2xl font-bold flex items-center gap-3">
+                    <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <LayoutGrid className="w-5 h-5 md:w-6 md:h-6 text-amber-100" />
+                    </div>
+                    <span>Memory Gallery</span>
+                    <span className="text-xs font-normal text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800 self-center mt-1">
+                        {filteredMemories.length}
                     </span>
                 </DialogTitle>
+                <button 
+                    onClick={onClose}
+                    className="p-2 hover:bg-zinc-900 rounded-full transition-colors text-zinc-400 hover:text-white"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             {/* Controls Toolbar */}
@@ -90,30 +98,34 @@ export function MemoryGallery({ isOpen, onClose, memories, onSelectMemory }: Mem
 
                 <div className="flex gap-2">
                     {/* Filter */}
-                    <select 
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value as any)}
-                        className="bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-zinc-600 cursor-pointer"
-                    >
-                        <option value="all">All Memories</option>
-                        <option value="unlocked">Unlocked</option>
-                        <option value="locked">Locked</option>
-                    </select>
+                    {/* Filter (Custom Select) */}
+                    <div className="relative">
+                        <select 
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value as any)}
+                            className="bg-zinc-900/50 border border-zinc-800 rounded-lg pl-3 pr-8 py-2 text-sm focus:outline-none focus:border-zinc-600 cursor-pointer appearance-none text-zinc-300 hover:text-white transition-colors"
+                        >
+                            <option value="all">All Memories</option>
+                            <option value="unlocked">Unlocked</option>
+                            <option value="locked">Locked</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                    </div>
 
                     {/* Sort */}
                     <button 
                         onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-                        className="flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-2 text-sm hover:bg-zinc-800 transition-colors"
+                        className="flex items-center gap-2 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-2 text-sm hover:bg-zinc-800 transition-colors text-zinc-300 hover:text-white"
                     >
-                        {sortOrder === 'newest' ? <ArrowDownNarrowWide className="w-4 h-4" /> : <ArrowUpNarrowWide className="w-4 h-4" />}
+                        <ArrowUpDown className="w-4 h-4" />
                         <span className="hidden sm:inline">{sortOrder === 'newest' ? 'Newest' : 'Oldest'}</span>
                     </button>
                 </div>
             </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="flex-1 overflow-y-auto p-3 md:p-8 scrollbar-hide">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-6">
                 {sortedMemories.map((memory) => {
                     const isLocked = memory.unlock_date && new Date(memory.unlock_date) > new Date();
 

@@ -287,11 +287,11 @@ function MapPageContent() {
       </div>
 
       {/* Title Overlay - Fades in after intro */}
-      <div className={`absolute top-8 md:top-10 left-0 right-0 z-20 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-[2000ms] delay-[2500ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
-        <h1 className="text-4xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 drop-shadow-2xl font-serif tracking-tighter px-4 text-center">
+      <div className={`absolute top-4 md:top-10 left-16 right-16 md:left-0 md:right-0 z-20 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-[2000ms] delay-[2500ms] ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
+        <h1 className="text-3xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 drop-shadow-2xl font-serif tracking-tighter px-4 text-center">
           Paraluman
         </h1>
-        <p className="text-white/60 text-[10px] md:text-sm font-light mt-2 tracking-widest uppercase text-center px-4 hidden md:block">
+        <p className="text-white/60 text-[10px] md:text-sm font-light mt-0 md:mt-2 tracking-widest uppercase text-center px-4 hidden md:block">
           Your compass to cherished memories.
         </p>
       </div>
@@ -357,14 +357,14 @@ function MapPageContent() {
 
       {/* Sign In Button (Centered Bottom if not logged in) */}
       {!user && (
-           <div className={`absolute bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 z-20 transition-opacity duration-1000 ${showIntro ? 'opacity-0' : 'opacity-100'} w-full flex justify-center px-4`}>
+           <div className={`absolute bottom-8 md:bottom-20 left-1/2 -translate-x-1/2 z-20 transition-opacity duration-1000 ${showIntro ? 'opacity-0' : 'opacity-100'} flex justify-center px-4`}>
               <button 
                 onClick={() => {
                     playClick();
                     setIsAuthModalOpen(true);
                 }}
                 onMouseEnter={playHover}
-                className="flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm md:text-base font-medium text-black transition-all hover:bg-zinc-200 shadow-xl hover:scale-105 active:scale-95 w-full max-w-xs md:w-auto"
+                className="flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3 text-sm md:text-base font-medium text-black transition-all hover:bg-zinc-200 shadow-xl hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                  <UserIcon className="w-5 h-5" />
                  Sign In to Start
@@ -373,7 +373,7 @@ function MapPageContent() {
       )}
 
       {/* Floating Dock (Bottom Center) */}
-      <div className={`absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-[3000ms] ${showIntro ? 'opacity-0 translate-y-[20px]' : 'opacity-100 translate-y-0'} w-full max-w-[95vw] md:w-auto flex justify-center`}>
+      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-[3000ms] ${showIntro ? 'opacity-0 translate-y-[20px]' : 'opacity-100 translate-y-0'} w-auto max-w-[calc(100vw-120px)] flex justify-center`}>
         {user && (
           <div className="flex items-center gap-1 p-1.5 bg-zinc-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl overflow-hidden max-w-full">
             {isJourneyMode ? null : (
@@ -396,7 +396,10 @@ function MapPageContent() {
                     className="flex items-center justify-center gap-2 px-4 md:px-5 py-2.5 rounded-full bg-white text-black font-semibold hover:bg-zinc-200 transition-all active:scale-95 flex-1 md:flex-initial"
                 >
                     <Plus className="w-4 h-4" />
-                    <span className="text-xs md:text-sm whitespace-nowrap">Add Memory</span>
+                    <span className="text-xs md:text-sm whitespace-nowrap">
+                        <span className="md:hidden">Add</span>
+                        <span className="hidden md:inline">Add Memory</span>
+                    </span>
                 </button>
                 <div className="w-px h-4 bg-zinc-700 mx-1" />
                 <button
@@ -405,10 +408,10 @@ function MapPageContent() {
                         setIsGalleryOpen(true);
                     }}
                     onMouseEnter={playHover}
-                    className="flex items-center justify-center gap-2 px-4 md:px-5 py-2.5 rounded-full text-white hover:bg-white/10 transition-all active:scale-95 flex-1 md:flex-initial"
+                    className="flex items-center justify-center gap-2 px-3 md:px-5 py-2.5 rounded-full text-white hover:bg-white/10 transition-all active:scale-95 flex-1 md:flex-initial"
                 >
                     <Grid className="w-4 h-4" />
-                    <span className="text-xs md:text-sm font-medium">Gallery</span>
+                    <span className="text-xs md:text-sm font-medium hidden sm:inline">Gallery</span>
                 </button>
                 
                 {memories.length > 1 && (
