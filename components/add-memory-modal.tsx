@@ -207,7 +207,7 @@ export function AddMemoryModal({
             ) : (
                 <>
                     <Upload className="w-8 h-8 text-zinc-500 mb-2" />
-                    <span className="text-sm text-zinc-500">Click to upload photo</span>
+                    <span className="text-sm text-zinc-500">Click to upload photo (Optional)</span>
                 </>
             )}
             <input 
@@ -311,7 +311,7 @@ export function AddMemoryModal({
               <Button
                 type="submit"
                 className="flex-[2] bg-white text-black hover:bg-gray-200"
-                disabled={isLoading || (!imageFile && !initialData?.media_url)}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
