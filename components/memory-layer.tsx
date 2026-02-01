@@ -189,173 +189,174 @@ export function MemoryLayer({ memories, onMemoryClick, currentUserId }: MemoryLa
                 type: "circle",
                 source: sourceId,
                 filter: ["!", ["has", "point_count"]], // ONLY for unclustered points
-                paint: {
-                    "circle-radius": [
-                        "case",
-                        ["boolean", ["feature-state", "hover"], false],
-                        8, // Size when hovered
-                        6  // Normal size
-                    ],
-                    "circle-color": [
-                        "case",
-                        ["boolean", ["get", "locked"], false],
-                        // Locked
-                        ["case", ["boolean", ["get", "isOwner"], false], "#fbbf24", "#0e7490"], // Gold if mine, Dark Cyan if public
-                        // Unlocked
-                        ["case", ["boolean", ["get", "isOwner"], false], "#ffffff", "#22d3ee"]  // Bright Silver (White) if mine, Cyan if public
-                    ],
-                    "circle-stroke-width": 2,
-                    "circle-stroke-color": ["case", ["boolean", ["get", "isOwner"], false], "#000000", "#164e63"], // Black stroke for mine, Dark Cyan stroke for public
-                }
-            });
-        }
-    };
-
-    ensureLineSource();
-    ensureLineLayers();
-    ensureSource();
-    ensureLayers();
-
-    // Interaction Handlers
-    const handleClick = (e: any) => {
-        const features = e.features;
-        if (!features?.length) return;
-
-        const feature = features[0];
-        const clusterId = feature.properties.cluster_id;
-
-        // If clicked on a cluster, zoom in
-        if (clusterId) {
-            const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
-            source.getClusterExpansionZoom(clusterId).then((zoom) => {
-                map.flyTo({
-                    center: (feature.geometry as any).coordinates,
-                    zoom: zoom,
-                    speed: 1.5,
-                    curve: 1
+                    paint: {
+                        "circle-radius": [
+                            "case",
+                            ["boolean", ["feature-state", "hover"], false],
+                            8, // Size when hovered
+                            6  // Normal size
+                        ],
+                        "circle-color": [
+                            "case",
+                            ["boolean", ["get", "locked"], false],
+                            // Locked
+                            ["case", ["boolean", ["get", "is_public"], false], "#0e7490", "#fbbf24"], // Public Locked: Dark Cyan, Private Locked: Gold
+                            // Unlocked
+                            ["case", ["boolean", ["get", "is_public"], false], "#22d3ee", "#ffffff"]  // Public Unlocked: Cyan, Private Unlocked: White
+                        ],
+                        "circle-stroke-width": 2,
+                        "circle-stroke-color": ["case", ["boolean", ["get", "is_public"], false], "#164e63", "#000000"], // Cyan stroke for public, Black for private
+                    }
                 });
-            }).catch((err) => {
-                console.error("Error getting cluster zoom:", err);
-            });
-            return;
-        }
+            }
+        };
 
-        // Otherwise handle single memory click (unclustered)
-        const properties = feature.properties;
-        const memoryId = properties.id;
-        const memory = memoriesRef.current.find(m => m.id === memoryId);
-        if (memory) {
-            onMemoryClickRef.current(memory);
-        }
-    };
+        ensureLineSource();
+        ensureLineLayers();
+        ensureSource();
+        ensureLayers();
 
-    const handleMouseEnterCluster = () => {
-        map.getCanvas().style.cursor = 'pointer';
-    };
+        // Interaction Handlers
+        const handleClick = (e: any) => {
+            const features = e.features;
+            if (!features?.length) return;
     
-    const handleMouseLeaveCluster = () => {
-        map.getCanvas().style.cursor = '';
-    };
-
-    let hoveredStateId: string | number | null = null;
-    const handleMouseEnter = (e: any) => {
-        map.getCanvas().style.cursor = 'pointer';
-        if (e.features.length > 0) {
+            const feature = features[0];
+            const clusterId = feature.properties.cluster_id;
+    
+            // If clicked on a cluster, zoom in
+            if (clusterId) {
+                const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
+                source.getClusterExpansionZoom(clusterId).then((zoom) => {
+                    map.flyTo({
+                        center: (feature.geometry as any).coordinates,
+                        zoom: zoom,
+                        speed: 1.5,
+                        curve: 1
+                    });
+                }).catch((err) => {
+                    console.error("Error getting cluster zoom:", err);
+                });
+                return;
+            }
+    
+            // Otherwise handle single memory click (unclustered)
+            const properties = feature.properties;
+            const memoryId = properties.id;
+            const memory = memoriesRef.current.find(m => m.id === memoryId);
+            if (memory) {
+                onMemoryClickRef.current(memory);
+            }
+        };
+    
+        const handleMouseEnterCluster = () => {
+            map.getCanvas().style.cursor = 'pointer';
+        };
+        
+        const handleMouseLeaveCluster = () => {
+            map.getCanvas().style.cursor = '';
+        };
+    
+        let hoveredStateId: string | number | null = null;
+        const handleMouseEnter = (e: any) => {
+            map.getCanvas().style.cursor = 'pointer';
+            if (e.features.length > 0) {
+                if (hoveredStateId !== null) {
+                    map.setFeatureState(
+                        { source: sourceId, id: hoveredStateId },
+                        { hover: false }
+                    );
+                }
+                hoveredStateId = e.features[0].id;
+                map.setFeatureState(
+                    { source: sourceId, id: hoveredStateId as string | number },
+                    { hover: true }
+                );
+            }
+        };
+    
+        const handleMouseLeave = () => {
+            map.getCanvas().style.cursor = '';
             if (hoveredStateId !== null) {
                 map.setFeatureState(
                     { source: sourceId, id: hoveredStateId },
                     { hover: false }
                 );
             }
-            hoveredStateId = e.features[0].id;
-            map.setFeatureState(
-                { source: sourceId, id: hoveredStateId as string | number },
-                { hover: true }
-            );
-        }
-    };
-
-    const handleMouseLeave = () => {
-        map.getCanvas().style.cursor = '';
-        if (hoveredStateId !== null) {
-            map.setFeatureState(
-                { source: sourceId, id: hoveredStateId },
-                { hover: false }
-            );
-        }
-        hoveredStateId = null;
-    };
-
-    map.on("click", layerId, handleClick);
-    map.on("mouseenter", layerId, handleMouseEnter);
-    map.on("mouseleave", layerId, handleMouseLeave);
-    
-    // Cluster Interaction
-    map.on("click", "clusters", handleClick); // Use same handler, logic inside detects cluster
-    map.on("mouseenter", "clusters", handleMouseEnterCluster);
-    map.on("mouseleave", "clusters", handleMouseLeaveCluster);
-
-    // Cleanup
-    return () => {
-        if (!map) return;
-        
-        // Safeguard against map being removed/destroyed already
-        if (map.getCanvas && map.getCanvas()) {
-            map.getCanvas().style.cursor = '';
-        }
-
-        try {
-            map.off("click", layerId, handleClick);
-            map.off("mouseenter", layerId, handleMouseEnter);
-            map.off("mouseleave", layerId, handleMouseLeave);
-            
-            map.off("click", "clusters", handleClick); 
-            map.off("mouseenter", "clusters", handleMouseEnterCluster);
-            map.off("mouseleave", "clusters", handleMouseLeaveCluster);
-
-            if (map.getLayer(layerId)) map.removeLayer(layerId);
-            if (map.getLayer(haloLayerId)) map.removeLayer(haloLayerId);
-            if (map.getLayer("clusters")) map.removeLayer("clusters");
-            if (map.getLayer("cluster-count")) map.removeLayer("cluster-count");
-            if (map.getSource(sourceId)) map.removeSource(sourceId);
-            
-            // Remove line layers
-            if (map.getLayer("constellation-core")) map.removeLayer("constellation-core");
-            if (map.getLayer("constellation-glow")) map.removeLayer("constellation-glow");
-            if (map.getSource("constellation-source")) map.removeSource("constellation-source");
-        } catch (e) {
-            console.warn("Map layer cleanup failed (map might be destroyed already):", e);
-        }
-    };
-  }, [map, isLoaded]); 
-
-  // 2. Update Data
-  useEffect(() => {
-    if (!map || !isLoaded) return;
-    
-    // Update Points
-    const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
-    if (source) {
-        const geojson: FeatureCollection = {
-            type: "FeatureCollection",
-            features: memories.map((m) => {
-                const isLocked = m.unlock_date ? new Date(m.unlock_date) > new Date() : false;
-                return {
-                    id: m.id, 
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [m.longitude, m.latitude],
-                    },
-                    properties: { 
-                        id: m.id, 
-                        title: m.location_name,
-                        locked: isLocked,
-                        isOwner: currentUserId ? m.user_id === currentUserId : false
-                    },
-                };
-            }),
+            hoveredStateId = null;
         };
+    
+        map.on("click", layerId, handleClick);
+        map.on("mouseenter", layerId, handleMouseEnter);
+        map.on("mouseleave", layerId, handleMouseLeave);
+        
+        // Cluster Interaction
+        map.on("click", "clusters", handleClick); // Use same handler, logic inside detects cluster
+        map.on("mouseenter", "clusters", handleMouseEnterCluster);
+        map.on("mouseleave", "clusters", handleMouseLeaveCluster);
+    
+        // Cleanup
+        return () => {
+            if (!map) return;
+            
+            // Safeguard against map being removed/destroyed already
+            if (map.getCanvas && map.getCanvas()) {
+                map.getCanvas().style.cursor = '';
+            }
+    
+            try {
+                map.off("click", layerId, handleClick);
+                map.off("mouseenter", layerId, handleMouseEnter);
+                map.off("mouseleave", layerId, handleMouseLeave);
+                
+                map.off("click", "clusters", handleClick); 
+                map.off("mouseenter", "clusters", handleMouseEnterCluster);
+                map.off("mouseleave", "clusters", handleMouseLeaveCluster);
+    
+                if (map.getLayer(layerId)) map.removeLayer(layerId);
+                if (map.getLayer(haloLayerId)) map.removeLayer(haloLayerId);
+                if (map.getLayer("clusters")) map.removeLayer("clusters");
+                if (map.getLayer("cluster-count")) map.removeLayer("cluster-count");
+                if (map.getSource(sourceId)) map.removeSource(sourceId);
+                
+                // Remove line layers
+                if (map.getLayer("constellation-core")) map.removeLayer("constellation-core");
+                if (map.getLayer("constellation-glow")) map.removeLayer("constellation-glow");
+                if (map.getSource("constellation-source")) map.removeSource("constellation-source");
+            } catch (e) {
+                console.warn("Map layer cleanup failed (map might be destroyed already):", e);
+            }
+        };
+      }, [map, isLoaded]); 
+    
+      // 2. Update Data
+      useEffect(() => {
+        if (!map || !isLoaded) return;
+        
+        // Update Points
+        const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
+        if (source) {
+            const geojson: FeatureCollection = {
+                type: "FeatureCollection",
+                features: memories.map((m) => {
+                    const isLocked = m.unlock_date ? new Date(m.unlock_date) > new Date() : false;
+                    return {
+                        id: m.id, 
+                        type: "Feature",
+                        geometry: {
+                            type: "Point",
+                            coordinates: [m.longitude, m.latitude],
+                        },
+                        properties: { 
+                            id: m.id, 
+                            title: m.location_name,
+                            locked: isLocked,
+                            isOwner: currentUserId ? m.user_id === currentUserId : false,
+                            is_public: m.is_public
+                        },
+                    };
+                }),
+            };
         source.setData(geojson);
     }
 
