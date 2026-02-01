@@ -190,6 +190,13 @@ function MapPageContent() {
   const handleDeleteMemory = async (id: number) => {
       if (!confirm("Are you sure you want to delete this memory? This cannot be undone.")) return;
 
+      // 1. Delete Comments
+      await supabase.from('comments').delete().eq('memory_id', id);
+
+      // 2. Delete Likes
+      await supabase.from('favorites').delete().eq('memory_id', id);
+
+      // 3. Delete Memory
       const { error } = await supabase.from('memories').delete().eq('id', id);
 
       if (error) {
